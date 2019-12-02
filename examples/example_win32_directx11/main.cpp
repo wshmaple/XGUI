@@ -11,6 +11,9 @@
 #include <dinput.h>
 #include <tchar.h>
 
+#include "log4z.h"  
+using namespace zsummer::log4z;
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -192,6 +195,33 @@ void b() {
     editor.Render("TextEditor");
     ImGui::End();
 }
+
+void tlog()
+{
+    //start log4z  
+    ILog4zManager::getRef().start();
+
+    //begin test stream log input....  
+    LOGT("stream input *** " << "LOGT LOGT LOGT LOGT" << " *** ");
+    LOGD("stream input *** " << "LOGD LOGD LOGD LOGD" << " *** ");
+    LOGI("stream input *** " << "LOGI LOGI LOGI LOGI" << " *** ");
+    LOGW("stream input *** " << "LOGW LOGW LOGW LOGW" << " *** ");
+    LOGE("stream input *** " << "LOGE LOGE LOGE LOGE" << " *** ");
+    LOGA("stream input *** " << "LOGA LOGA LOGA LOGA" << " *** ");
+    LOGF("stream input *** " << "LOGF LOGF LOGF LOGF" << " *** ");
+
+    // cannot support VC6 or VS2003  
+    //begin test format log input....  
+    LOGFMTT("format input *** %s *** %d ***", "LOGFMTT", 123456);
+    LOGFMTD("format input *** %s *** %d ***", "LOGFMTD", 123456);
+    LOGFMTI("format input *** %s *** %d ***", "LOGFMTI", 123456);
+    LOGFMTW("format input *** %s *** %d ***", "LOGFMTW", 123456);
+    LOGFMTE("format input *** %s *** %d ***", "LOGFMTE", 123456);
+    LOGFMTA("format input *** %s *** %d ***", "LOGFMTA", 123456);
+    LOGFMTF("format input *** %s *** %d ***", "LOGFMTF", 123456);
+
+    LOGA("main quit ...");
+}
 // Simple helper function to load an image into a DX11 texture with common settings
 bool LoadTextureFromFile(const char* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
 {
@@ -253,7 +283,7 @@ int main(int, char**)
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 1;
     }
-
+    tlog();
     // Show the window
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
