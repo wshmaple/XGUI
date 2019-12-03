@@ -26,6 +26,7 @@
     </ClInclude>
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextEditor.h" />
+    <ClInclude Include="imfilebrowser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\imgui.cpp">

@@ -15,6 +15,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <examples\example_win32_directx11\TextEditor.h>
+#include <examples\example_win32_directx11\imfilebrowser.h>
+#include <iostream>
+
 //  #include <examples\libs\gl3w\GL\glcorearb.h>
 //  #include <examples\libs\gl3w\GL\gl3w.h>
 
@@ -40,7 +43,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 //#include "stb_image.h"
 
 TextEditor editor;
-static const char* fileToEdit = "main.cpp";
+ImGui::FileBrowser fileDialog;
+char* fileToEdit = "main.cpp";
+char fileToEditName[255] = {0};
+
+
 void a()
 {
 
@@ -112,7 +119,8 @@ void a()
     //	static const char* fileToEdit = "test.cpp";
 
     {
-        std::ifstream t(fileToEdit);
+        strcpy_s(fileToEditName, fileToEdit);
+        std::ifstream t(fileToEditName);
         if (t.good())
         {
             std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -125,10 +133,15 @@ void b() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
     ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
+            if (ImGui::MenuItem("Open"))
+            {
+                fileDialog.Open();
+            }
             if (ImGui::MenuItem("Save"))
             {
                 auto textToSave = editor.GetText();
@@ -184,14 +197,61 @@ void b() {
         ImGui::EndMenuBar();
     }
 
+    fileDialog.Display();
+
+    if (fileDialog.HasSelected())
+    {
+        std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
+        std::ifstream t(fileDialog.GetSelected().string());
+        if (t.good())
+        {
+            //  fileToEdit = fileDialog.GetSelectedName().string().c_str();
+            strcpy_s(fileToEditName, fileDialog.GetSelectedName().string().c_str());
+            std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+            editor.SetText(str);
+        }
+
+        fileDialog.ClearSelected();
+    }
+
+
     ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
         editor.IsOverwrite() ? "Ovr" : "Ins",
         editor.CanUndo() ? "*" : " ",
-        editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+        editor.GetLanguageDefinition().mName.c_str(), fileToEditName);
 
     editor.Render("TextEditor");
     ImGui::End();
 }
+
+void f()
+{
+    // create a file browser instance
+//    ImGui::FileBrowser fileDialog;
+
+    // (optional) set browser properties
+    fileDialog.SetTitle("title");
+    fileDialog.SetTypeFilters({ ".h", ".cpp" });
+
+    if (ImGui::Begin("dummy window"))
+    {
+        // open file dialog when user clicks this button
+        if (ImGui::Button("open file dialog"))
+            fileDialog.Open();
+    }
+    ImGui::End();
+
+    fileDialog.Display();
+
+    if (fileDialog.HasSelected())
+    {
+        std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
+        fileDialog.ClearSelected();
+    }
+
+}
+
+
 // Simple helper function to load an image into a DX11 texture with common settings
 bool LoadTextureFromFile(const char* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
 {
@@ -304,6 +364,14 @@ int main(int, char**)
     IM_ASSERT(ret);
     a();
 
+    // create a file browser instance
+
+
+    // (optional) set browser properties
+    fileDialog.SetTitle("title");
+    fileDialog.SetTypeFilters({ ".h", ".cpp" });
+
+
     while (msg.message != WM_QUIT)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -375,6 +443,9 @@ int main(int, char**)
             ImGui::End();
         }
         b();
+
+     
+
         // Rendering
         ImGui::Render();
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
