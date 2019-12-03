@@ -17,6 +17,9 @@
 #include <examples\example_win32_directx11\TextEditor.h>
 #include <examples\example_win32_directx11\imfilebrowser.h>
 #include <iostream>
+#include <examples\example_win32_directx11\imgui_memory_editor.h>
+#include <examples\example_win32_directx11\imHotKey.h>
+#include <examples\example_win32_directx11\imgui_dock.h>
 
 //  #include <examples\libs\gl3w\GL\glcorearb.h>
 //  #include <examples\libs\gl3w\GL\gl3w.h>
@@ -46,8 +49,9 @@ TextEditor editor;
 ImGui::FileBrowser fileDialog;
 char* fileToEdit = "main.cpp";
 char fileToEditName[255] = {0};
+static MemoryEditor mem_edit;
 
-
+char testMemry[255] = { 0 };
 void a()
 {
 
@@ -250,7 +254,71 @@ void f()
     }
 
 }
+static std::vector<ImHotKey::HotKey> hotkeys = { { "Layout", "Reorder nodes in a simpler layout", 0xFFFF261D}
+    ,{"Save", "Save the current graph", 0xFFFF1F1D}
+    ,{"Load", "Load an existing graph file", 0xFFFF181D}
+    ,{"Play/Stop", "Play or stop the animation from the current graph", 0xFFFFFF3F}
+    ,{"SetKey", "Make a new animation key with the current parameters values at the current time", 0xFFFFFF1F}
+};
+void H()
+{
 
+
+    // The editor is a modal window. bring it with something like that
+    if (ImGui::Button("Edit Hotkeys"))
+    {
+        ImGui::OpenPopup("HotKeys Editor");
+    }
+    ImHotKey::Edit(hotkeys.data(), hotkeys.size(), "HotKeys Editor");
+
+    // ImHotKey also provides a way to retrieve HotKey
+    int hotkey = ImHotKey::GetHotKey(hotkeys.data(), hotkeys.size());
+    if (hotkey != -1)
+    {
+        // handle the hotkey index!
+    }
+}
+
+void docktest()
+{
+    if (ImGui::Begin("Dock Demo"))
+    {
+        // dock layout by hard-coded or .ini file
+        ImGui::BeginDockspace();
+
+        if (ImGui::BeginDock("Dock 1")) {
+            ImGui::Text("I'm Wubugui!");
+        }
+        ImGui::EndDock();
+
+        if (ImGui::BeginDock("Dock 2")) {
+            ImGui::Text("I'm BentleyBlanks!");
+        }
+        ImGui::EndDock();
+
+        if (ImGui::BeginDock("Dock 3")) {
+            ImGui::Text("I'm LonelyWaiting!");
+        }
+        ImGui::EndDock();
+
+        ImGui::EndDockspace();
+    }
+    ImGui::End();
+
+    // multiple dockspace supported
+    if (ImGui::Begin("Dock Demo2"))
+    {
+        ImGui::BeginDockspace();
+
+        if (ImGui::BeginDock("Dock 2")) {
+            ImGui::Text("Who's your daddy?");
+        }
+        ImGui::EndDock();
+
+        ImGui::EndDockspace();
+    }
+    ImGui::End();
+}
 
 // Simple helper function to load an image into a DX11 texture with common settings
 bool LoadTextureFromFile(const char* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
@@ -430,6 +498,7 @@ int main(int, char**)
 
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            sprintf_s(testMemry, "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
@@ -443,8 +512,9 @@ int main(int, char**)
             ImGui::End();
         }
         b();
-
-     
+        docktest();
+      //  H(); //hot key
+        mem_edit.DrawWindow("Memory Editor", testMemry, strlen(testMemry));
 
         // Rendering
         ImGui::Render();
