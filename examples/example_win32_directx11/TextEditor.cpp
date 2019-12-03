@@ -1880,8 +1880,22 @@ void TextEditor::ColorizeInternal()
 				auto& g = line[currentCoord.mColumn];
 				auto c = g.mChar;
 
-				if (c != mLanguageDefinition.mPreprocChar && !isspace(c))
-					firstChar = false;
+                try
+                {
+                   // if ((c != mLanguageDefinition.mPreprocChar) && (!isspace(c)))
+                    if (c != mLanguageDefinition.mPreprocChar)
+                    {
+                       // if(!isspace(c))
+                        if(c !=0x20 || c!=0x09 || c!=0x0a || c!=0x0b || c!=0x0c || c!=0x0d)
+                        firstChar = false;
+                    }
+                        
+                }
+                catch (const std::exception&)
+                {
+
+                }
+				
 
 				if (currentCoord.mColumn == line.size() - 1 && line[line.size() - 1].mChar == '\\')
 					concatenate = true;
@@ -2308,7 +2322,11 @@ static bool TokenizeCStylePunctuation(const char * in_begin, const char * in_end
 
 	return false;
 }
-
+int isblank(int c)
+{
+    if ((c == ' ') || (c == '\t')) return 1;
+    else return 0;
+}
 const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::CPlusPlus()
 {
 	static bool inited = false;
@@ -2340,7 +2358,7 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::CPlusPlus(
 		langDef.mTokenize = [](const char * in_begin, const char * in_end, const char *& out_begin, const char *& out_end, PaletteIndex & paletteIndex) -> bool
 		{
 			paletteIndex = PaletteIndex::Max;
-
+            if(in_begin)
 			while (in_begin < in_end && isblank(*in_begin))
 				in_begin++;
 

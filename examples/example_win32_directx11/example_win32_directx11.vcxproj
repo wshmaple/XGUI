@@ -87,6 +87,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..;..;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -117,6 +118,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\..;..;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -152,6 +154,10 @@
     <ClInclude Include="..\..\imgui_internal.h" />
     <ClInclude Include="..\imgui_impl_dx11.h" />
     <ClInclude Include="..\imgui_impl_win32.h" />
+    <ClInclude Include="imfilebrowser.h" />
+    <ClInclude Include="imgui_dock.h" />
+    <ClInclude Include="imgui_memory_editor.h" />
+    <ClInclude Include="imHotKey.h" />
     <ClInclude Include="log4z.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextEditor.h" />
@@ -163,6 +169,7 @@
     <ClCompile Include="..\..\imgui_widgets.cpp" />
     <ClCompile Include="..\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui_dock.cpp" />
     <ClCompile Include="log4z.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TextEditor.cpp" />

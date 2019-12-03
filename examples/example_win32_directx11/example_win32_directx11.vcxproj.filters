@@ -26,6 +26,10 @@
     </ClInclude>
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextEditor.h" />
+    <ClInclude Include="imfilebrowser.h" />
+    <ClInclude Include="imgui_memory_editor.h" />
+    <ClInclude Include="imHotKey.h" />
+    <ClInclude Include="imgui_dock.h" />
     <ClInclude Include="log4z.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +55,7 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="TextEditor.cpp" />
+    <ClCompile Include="imgui_dock.cpp" />
     <ClCompile Include="log4z.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -18,6 +18,12 @@ using namespace zsummer::log4z;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <examples\example_win32_directx11\TextEditor.h>
+#include <examples\example_win32_directx11\imfilebrowser.h>
+#include <iostream>
+#include <examples\example_win32_directx11\imgui_memory_editor.h>
+#include <examples\example_win32_directx11\imHotKey.h>
+#include <examples\example_win32_directx11\imgui_dock.h>
+
 //  #include <examples\libs\gl3w\GL\glcorearb.h>
 //  #include <examples\libs\gl3w\GL\gl3w.h>
 
@@ -43,7 +49,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 //#include "stb_image.h"
 
 TextEditor editor;
-static const char* fileToEdit = "main.cpp";
+ImGui::FileBrowser fileDialog;
+char* fileToEdit = "main.cpp";
+char fileToEditName[255] = {0};
+static MemoryEditor mem_edit;
+
+char testMemry[255] = { 0 };
 void a()
 {
 
@@ -115,7 +126,8 @@ void a()
     //	static const char* fileToEdit = "test.cpp";
 
     {
-        std::ifstream t(fileToEdit);
+        strcpy_s(fileToEditName, fileToEdit);
+        std::ifstream t(fileToEditName);
         if (t.good())
         {
             std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -128,10 +140,15 @@ void b() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
     ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
+            if (ImGui::MenuItem("Open"))
+            {
+                fileDialog.Open();
+            }
             if (ImGui::MenuItem("Save"))
             {
                 auto textToSave = editor.GetText();
@@ -187,41 +204,125 @@ void b() {
         ImGui::EndMenuBar();
     }
 
+    fileDialog.Display();
+
+    if (fileDialog.HasSelected())
+    {
+        std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
+        std::ifstream t(fileDialog.GetSelected().string());
+        if (t.good())
+        {
+            //  fileToEdit = fileDialog.GetSelectedName().string().c_str();
+            strcpy_s(fileToEditName, fileDialog.GetSelectedName().string().c_str());
+            std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+            editor.SetText(str);
+        }
+
+        fileDialog.ClearSelected();
+    }
+
+
     ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
         editor.IsOverwrite() ? "Ovr" : "Ins",
         editor.CanUndo() ? "*" : " ",
-        editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+        editor.GetLanguageDefinition().mName.c_str(), fileToEditName);
 
     editor.Render("TextEditor");
     ImGui::End();
 }
 
-void tlog()
+void f()
 {
-    //start log4z  
-    ILog4zManager::getRef().start();
+    // create a file browser instance
+//    ImGui::FileBrowser fileDialog;
 
-    //begin test stream log input....  
-    LOGT("stream input *** " << "LOGT LOGT LOGT LOGT" << " *** ");
-    LOGD("stream input *** " << "LOGD LOGD LOGD LOGD" << " *** ");
-    LOGI("stream input *** " << "LOGI LOGI LOGI LOGI" << " *** ");
-    LOGW("stream input *** " << "LOGW LOGW LOGW LOGW" << " *** ");
-    LOGE("stream input *** " << "LOGE LOGE LOGE LOGE" << " *** ");
-    LOGA("stream input *** " << "LOGA LOGA LOGA LOGA" << " *** ");
-    LOGF("stream input *** " << "LOGF LOGF LOGF LOGF" << " *** ");
+    // (optional) set browser properties
+    fileDialog.SetTitle("title");
+    fileDialog.SetTypeFilters({ ".h", ".cpp" });
 
-    // cannot support VC6 or VS2003  
-    //begin test format log input....  
-    LOGFMTT("format input *** %s *** %d ***", "LOGFMTT", 123456);
-    LOGFMTD("format input *** %s *** %d ***", "LOGFMTD", 123456);
-    LOGFMTI("format input *** %s *** %d ***", "LOGFMTI", 123456);
-    LOGFMTW("format input *** %s *** %d ***", "LOGFMTW", 123456);
-    LOGFMTE("format input *** %s *** %d ***", "LOGFMTE", 123456);
-    LOGFMTA("format input *** %s *** %d ***", "LOGFMTA", 123456);
-    LOGFMTF("format input *** %s *** %d ***", "LOGFMTF", 123456);
+    if (ImGui::Begin("dummy window"))
+    {
+        // open file dialog when user clicks this button
+        if (ImGui::Button("open file dialog"))
+            fileDialog.Open();
+    }
+    ImGui::End();
 
-    LOGA("main quit ...");
+    fileDialog.Display();
+
+    if (fileDialog.HasSelected())
+    {
+        std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
+        fileDialog.ClearSelected();
+    }
+
 }
+static std::vector<ImHotKey::HotKey> hotkeys = { { "Layout", "Reorder nodes in a simpler layout", 0xFFFF261D}
+    ,{"Save", "Save the current graph", 0xFFFF1F1D}
+    ,{"Load", "Load an existing graph file", 0xFFFF181D}
+    ,{"Play/Stop", "Play or stop the animation from the current graph", 0xFFFFFF3F}
+    ,{"SetKey", "Make a new animation key with the current parameters values at the current time", 0xFFFFFF1F}
+};
+void H()
+{
+
+
+    // The editor is a modal window. bring it with something like that
+    if (ImGui::Button("Edit Hotkeys"))
+    {
+        ImGui::OpenPopup("HotKeys Editor");
+    }
+    ImHotKey::Edit(hotkeys.data(), hotkeys.size(), "HotKeys Editor");
+
+    // ImHotKey also provides a way to retrieve HotKey
+    int hotkey = ImHotKey::GetHotKey(hotkeys.data(), hotkeys.size());
+    if (hotkey != -1)
+    {
+        // handle the hotkey index!
+    }
+}
+
+void docktest()
+{
+    if (ImGui::Begin("Dock Demo"))
+    {
+        // dock layout by hard-coded or .ini file
+        ImGui::BeginDockspace();
+
+        if (ImGui::BeginDock("Dock 1")) {
+            ImGui::Text("I'm Wubugui!");
+        }
+        ImGui::EndDock();
+
+        if (ImGui::BeginDock("Dock 2")) {
+            ImGui::Text("I'm BentleyBlanks!");
+        }
+        ImGui::EndDock();
+
+        if (ImGui::BeginDock("Dock 3")) {
+            ImGui::Text("I'm LonelyWaiting!");
+        }
+        ImGui::EndDock();
+
+        ImGui::EndDockspace();
+    }
+    ImGui::End();
+
+    // multiple dockspace supported
+    if (ImGui::Begin("Dock Demo2"))
+    {
+        ImGui::BeginDockspace();
+
+        if (ImGui::BeginDock("Dock 2")) {
+            ImGui::Text("Who's your daddy?");
+        }
+        ImGui::EndDock();
+
+        ImGui::EndDockspace();
+    }
+    ImGui::End();
+}
+
 // Simple helper function to load an image into a DX11 texture with common settings
 bool LoadTextureFromFile(const char* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
 {
@@ -283,7 +384,7 @@ int main(int, char**)
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 1;
     }
-    tlog();
+    //tlog();
     // Show the window
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
@@ -333,6 +434,14 @@ int main(int, char**)
     bool ret = LoadTextureFromFile("image/1.jpg", &my_texture, &my_image_width, &my_image_height);
     IM_ASSERT(ret);
     a();
+
+    // create a file browser instance
+
+
+    // (optional) set browser properties
+    fileDialog.SetTitle("title");
+    fileDialog.SetTypeFilters({ ".h", ".cpp" });
+
 
     while (msg.message != WM_QUIT)
     {
@@ -392,6 +501,7 @@ int main(int, char**)
 
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            sprintf_s(testMemry, "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
@@ -405,6 +515,10 @@ int main(int, char**)
             ImGui::End();
         }
         b();
+        docktest();
+      //  H(); //hot key
+        mem_edit.DrawWindow("Memory Editor", testMemry, strlen(testMemry));
+
         // Rendering
         ImGui::Render();
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
